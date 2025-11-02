@@ -2,7 +2,7 @@
 
 AuraHaus is a property management concept app designed to simplify project tracking and portfolio organization through a clean, modern dashboard interface.
 
-[Link to view project]()
+[Link to view project](https://aurahaus.up.railway.app/)
 
 ![screenshot](public/img/aurahaus.png)
 
