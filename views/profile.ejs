@@ -1,118 +1,251 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
-  <title>BudgetBuddy | Profile</title>
+  <title>AuraHaus • Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&family=Poppins:wght@400;500;700&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet" href="/style.css">
+  <link href="/style.css" rel="stylesheet">
 </head>
-<body>
-  <div class="profile-container">
-    <header class="profile-header sticky-header anim-fadeUp">
-      <div class="brand-lockup">
-        <span class="brand-mark">$</span>
-        <h1 class="profile-title brand-text-nowrap">BudgetBuddy Dashboard</h1>
-      </div>
-      <a href="/logout" class="logout-button">Logout</a>
-    </header>
 
-    <main class="profile-content">
-      <section class="account-section card card-compact sticky-card anim-fadeUp">
-        <h2 class="section-title">Account Details</h2>
-        <div class="account-info stack-8">
-          <p><strong>ID:</strong>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <span class="brand-mark">AH</span>
+      <h1 class="brand-title">AuraHaus</h1>
+    </div>
+    <a href="/logout" class="btn btn-ghost">Logout</a>
+  </header>
+  <div class="page">
+
+    <div class="dashboard-grid">
+      <!-- Account -->
+      <section class="account-card card-panel" aria-labelledby="account-heading">
+        <h2 id="account-heading" class="section-title">Account</h2>
+        <dl class="account-list">
+          <dt>User ID</dt>
+          <dd>
             <%= user._id %>
-          </p>
-          <p><strong>Email:</strong>
-            <%= user.local && user.local.email ? user.local.email : '' %>
-          </p>
-          <a href="/unlink/local" class="unlink-button">Unlink Account</a>
+          </dd>
+          <dt>Email</dt>
+          <dd>
+            <%= (user.local && user.local.email) ? user.local.email : '' %>
+          </dd>
+        </dl>
+      </section>
+
+      <!-- Stats -->
+      <section class="dashboard-stats card-panel" aria-labelledby="stats-heading">
+        <h2 id="stats-heading" class="section-title">Stats</h2>
+        <div class="stat-grid">
+          <div class="stat-item">
+            <div class="stat-label">Projects</div>
+            <div class="stat-value">
+              <%= totals.count %>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Total Spend</div>
+            <div class="stat-value">
+              <%= totals.sumFormatted || ('$' +
+                Number(totals.sum||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})) %>
+                <!-- from Google -->
+            </div>
+          </div>
+        </div>
+        <div class="status-pills">
+          <span class="pill">Planned: <%= (totals.status && totals.status['planned']) || 0 %></span>
+          <span class="pill">In Progress: <%= (totals.status && totals.status['in-progress']) || 0 %></span>
+          <span class="pill">Completed: <%= (totals.status && totals.status['completed']) || 0 %></span>
+          <span class="pill">On Hold: <%= (totals.status && totals.status['on-hold']) || 0 %></span>
         </div>
       </section>
 
-      <section class="transactions-section card">
-        <h2 class="section-title">Add Transaction</h2>
-        <div class="add-transaction-form">
-          <form action="/transactions" method="POST" class="transaction-form form-narrow stack-12">
-            <div class="form-group">
-              <label class="form-label">Type</label>
-              <select name="type" class="form-control" required>
-                <option value="expense">Expense</option>
-                <option value="income">Income</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Amount</label>
-              <input class="form-control" type="number" name="amount" step="0.01" min="0" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Category</label>
-              <input class="form-control" type="text" name="category" placeholder="e.g., groceries, rent, work"
-                required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Date</label>
-              <input class="form-control" type="date" name="date" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Note</label>
-              <input class="form-control" type="text" name="note" placeholder="optional">
-            </div>
-            <button type="submit" class="submit-button">Add Transaction</button>
-          </form>
-        </div>
+      <!-- Add Project form -->
+      <section class="project-form card-panel" aria-labelledby="form-heading">
+        <h2 id="form-heading" class="section-title">Add Project</h2>
+        <form action="/projects" method="POST" class="form-vertical">
+          <div class="form-group">
+            <label>Project Title</label>
+            <input name="title" required placeholder="e.g., Walk-in Closet" class="input">
+          </div>
 
-        <h2 class="section-title">Recent Transactions</h2>
-        <% if (transactions && transactions.length) { %>
-          <div class="table-scroll">
-            <table class="transactions-table">
-              <thead>
+          <div class="form-group">
+            <label>Cost ($)</label>
+            <input name="cost" type="number" step="0.01" min="0" placeholder="5000" class="input">
+          </div>
+
+          <div class="form-group">
+            <label>Type</label>
+            <select name="type" class="input">
+              <option value="maintenance">Maintenance</option>
+              <option value="repair">Repair</option>
+              <option value="renovation" selected>Renovation</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Status</label>
+            <select name="status" class="input">
+              <option value="planned" selected>Planned</option>
+              <option value="in-progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="on-hold">On Hold</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Start Date</label>
+            <input name="startDate" type="date" class="input">
+          </div>
+
+          <div class="form-group">
+            <label>Due Date</label>
+            <input name="dueDate" type="date" class="input">
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea name="description" rows="2" class="input" placeholder="Notes, materials, scope..."></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-primary">Add Project</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Summary (compact when empty) -->
+      <section class="project-summary card-panel" aria-labelledby="summary-heading">
+        <h2 id="summary-heading" class="section-title">Summary</h2>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Cost</th>
+                <th><span class="cal-icon" aria-hidden="true"></span> Start Date</th>
+                <th><span class="cal-icon" aria-hidden="true"></span> Due Date</th>
+                <th>Created</th>
+                <th>Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% projects.forEach(project=> { %>
                 <tr>
-                  <th>Date</th>
-                  <th>Type</th>
-                  <th>Category</th>
-                  <th>Amount</th>
-                  <th>Note</th>
-                  <th>Action</th>
+                  <td class="cap">
+                    <%= project.title %>
+                  </td>
+                  <td class="cap">
+                    <%= project.type || 'maintenance' %>
+                  </td>
+                  <td class="cap">
+                    <%= project.status || 'planned' %>
+                  </td>
+                  <td>
+                    <%= project.costFormatted || ('$' +
+                      Number(project.cost||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}))
+                      <!-- from Google -->
+                      %>
+                  </td>
+                  <td>
+                    <%= project.startDateShort || (project.startDate ? new
+                      Date(project.startDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+                      <!-- from Google -->
+                      : '-' ) %>
+                  </td>
+                  <td>
+                    <%= project.dueDateShort || (project.dueDate ? new
+                      Date(project.dueDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+                      : '-' ) %>
+                  </td>
+                  <td>
+                    <%= project.createdAt ? new
+                      Date(project.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+                      : '-' %>
+                  </td>
+                  <td>
+                    <%= project.updatedAt ? new
+                      Date(project.updatedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+                      : '-' %>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                <% transactions.forEach(function(t){ %>
-                  <tr>
-                    <td>
-                      <%= new Date(t.date).toLocaleDateString() %>
-                    </td>
-                    <td class="transaction-type">
-                      <%= t.type %>
-                    </td>
-                    <td>
-                      <%= t.category %>
-                    </td>
-                    <td>
-                      <%= (Number(t.amount) || 0).toLocaleString(undefined, { style:'currency', currency:'USD' }) %>
-                    </td>
-                    <td>
-                      <%= t.note %>
-                    </td>
-                    <td>
-                      <form class="inline-form" action="/transactions/<%= t._id %>/delete" method="POST">
-                        <button class="delete-button" type="submit">Delete</button>
-                      </form>
-                    </td>
-                  </tr>
-                  <% }) %>
-              </tbody>
-            </table>
+                <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Projects (cards) -->
+      <section class="project-list card-panel" aria-labelledby="projects-heading">
+        <h2 id="projects-heading" class="section-title">Projects</h2>
+
+        <% if (projects && projects.length) { %>
+          <div class="project-list-grid tight">
+            <% projects.forEach(project=> { %>
+              <article class="project-card compact">
+                <div class="project-content">
+                  <div class="project-top">
+                    <h3 class="project-title cap">
+                      <%= project.title %>
+                    </h3>
+                    <span class="project-badge <%= project.status %> cap">
+                      <%= project.status || 'planned' %>
+                    </span>
+                  </div>
+
+                  <div class="project-meta">
+                    <span class="chip cap">
+                      <%= project.type || 'maintenance' %>
+                    </span>
+                  </div>
+
+                  <div class="project-fields">
+                    <div class="field">
+                      <span class="label">Description</span>
+                      <p class="project-desc">
+                        <%= project.description || 'No description provided.' %>
+                      </p>
+                    </div>
+                  </div>
+
+                  <form action="/projects/<%= project._id %>/update" method="POST" class="project-inline-edit">
+                    <input class="input" name="title" placeholder="Update title">
+                    <input class="input" name="cost" type="number" step="0.01" min="0" placeholder="Update cost">
+                    <select class="input" name="type">
+                      <option value="maintenance" <%=project.type==='maintenance' ? 'selected' : '' %>>Maintenance
+                      </option>
+                      <option value="repair" <%=project.type==='repair' ? 'selected' : '' %>>Repair</option>
+                      <option value="renovation" <%=project.type==='renovation' ? 'selected' : '' %>>Renovation</option>
+                    </select>
+                    <input type="text" class="input" name="description" placeholder="Update description">
+                    <input type="date" class="input" name="startDate" placeholder="Update start date">
+                    <input type="date" class="input" name="dueDate" placeholder="Update due date">
+                    <select class="input" name="status">
+                      <option value="planned" <%=project.status==='planned' ?'selected':''%>>Planned</option>
+                      <option value="in-progress" <%=project.status==='in-progress' ?'selected':''%>>In Progress
+                      </option>
+                      <option value="completed" <%=project.status==='completed' ?'selected':''%>>Completed</option>
+                      <option value="on-hold" <%=project.status==='on-hold' ?'selected':''%>>On Hold</option>
+                    </select>
+                    <button class="btn btn-outline">Update</button>
+                  </form>
+
+                  <form action="/projects/<%= project._id %>/delete" method="POST">
+                    <button class="btn btn-danger">Delete</button>
+                  </form>
+                </div>
+              </article>
+              <% }) %>
           </div>
           <% } else { %>
-            <p class="empty-message">No transactions yet.</p>
+            <p class="empty">No projects yet — start building your dream space!</p>
             <% } %>
       </section>
-    </main>
+    </div>
   </div>
 </body>
+
 </html>

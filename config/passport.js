@@ -1,4 +1,4 @@
-// config/passport.js
+// pulled from savage-auth repo:
 
 // load all the things we need
 var LocalStrategy   = require('passport-local').Strategy;
