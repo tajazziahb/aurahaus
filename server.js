@@ -1,3 +1,4 @@
+// server.js
 require('dotenv').config();
 
 const express = require('express');
@@ -8,15 +9,13 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const passport = require('passport');
 const flash = require('connect-flash');
-const mongoose = require('mongoose');
+
+const connectToMongo = require('./config/database');
 
 const PORT = process.env.PORT || 8080;
 
-mongoose.connect(process.env.MONGODB_URI, {
-  dbName: process.env.DB_NAME || 'budgetbuddy',
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
+// lightweight health endpoint so Railway health checks pass even before DB mounts
+app.get('/health', (_req, res) => res.status(200).send('ok'));
 
 app.use(morgan('dev'));
 app.use(cookieParser());
@@ -36,12 +35,23 @@ app.use(flash());
 
 require('./config/passport')(passport);
 
-mongoose.connection.once('open', () => {
-  const db = mongoose.connection.db; // native driver handle for db.collection(...)
-  require('./app/routes.js')(app, passport, db);
+(async () => {
+  try {
+    const conn = await connectToMongo();
+    console.log('✅ MongoDB connected successfully.');
 
-  app.listen(PORT, () => {
-    console.log('✅ Mongo connected');
-    console.log('🚀 http://localhost:' + PORT);
-  });
-});
+    const db = conn.db; // native handle for db.collection(...)
+    require('./app/routes.js')(app, passport, db);
+
+    app.listen(PORT, () => {
+      console.log(`🚀 http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error('❌ Startup error:', err?.message || err);
+    process.exit(1);
+  }
+})();
+
+// basic hardening from ChatGPT to help troucleshoot unhandled errors
+process.on('unhandledRejection', (e) => console.error('UnhandledRejection:', e));
+process.on('uncaughtException', (e) => { console.error('UncaughtException:', e); process.exit(1); });
