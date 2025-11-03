@@ -56,8 +56,8 @@ module.exports = function (app, passport, db) {
         type: type || 'maintenance',
         status: status || 'planned',
         cost: parseFloat(cost || 0),
-        startDate: startDate ? new Date(startDate) : null,
-        dueDate: dueDate ? new Date(dueDate) : null,
+        startDate: startDate ? new Date(startDate + 'T00:00:00') : null,
+        dueDate: dueDate ? new Date(dueDate + 'T00:00:00') : null,
         description: (description || '').trim(),
         createdAt: new Date(),
         updatedAt: new Date()
@@ -82,8 +82,8 @@ module.exports = function (app, passport, db) {
             type: type || 'maintenance',
             status: status || 'planned',
             cost: parseFloat(cost || 0),
-            startDate: startDate ? new Date(startDate) : null,
-            dueDate: dueDate ? new Date(dueDate) : null,
+            startDate: startDate ? new Date(startDate + 'T00:00:00') : null,
+            dueDate: dueDate ? new Date(dueDate + 'T00:00:00') : null,
             description: (description || '').trim(),
             updatedAt: new Date()
           }
