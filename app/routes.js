@@ -6,24 +6,6 @@ module.exports = function (app, passport, db) {
     res.redirect('/');
   }
 
-  // Save project 
-  app.post('/projects', (req, res) => {
-    const { title, description, cost, category, date } = req.body;
-    db.collection('projects').save({
-      userId: String(req.user._id),
-      title,
-      description,
-      cost: parseFloat(cost) || 0,
-      category,
-      date: new Date(date),
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }, (err, result) => {
-      if (err) return console.log(err)
-      console.log('saved to database')
-      res.redirect('/profile')
-    })
-  })
   // Home
   app.get('/', (req, res) => {
     if (req.isAuthenticated && req.isAuthenticated()) return res.redirect('/profile');
